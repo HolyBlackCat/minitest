@@ -1,0 +1,11 @@
+-DEM_ENABLE_TESTS=
+-DEM_MINITEST_IMPLEMENTATION=
+-std=c++23
+-Wall
+-Wextra
+-Wdeprecated
+-Wextra-semi
+-Wimplicit-fallthrough
+-Wconversion
+-Wno-implicit-int-float-conversion
+-Iinclude
