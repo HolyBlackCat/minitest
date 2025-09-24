@@ -13,7 +13,7 @@ EM_TEST( pass2 )
 {
     EM_CHECK(true);
     std::this_thread::sleep_for(std::chrono::milliseconds(100));
-    std::fprintf(stderr, "Hello from A!\n");
+    std::printf("Hello!\n");
 }
 
 #if __cpp_exceptions
@@ -61,13 +61,21 @@ EM_TEST( throw_nested_unknown )
 
 EM_TEST( assert_false )
 {
+    std::printf("Before!\n");
+    EM_CHECK_SOFT(false);
+    std::printf("After soft assertion!\n");
     EM_CHECK(false);
+    std::printf("After hard assertion!\n");
 }
 
 #if __cpp_exceptions
 EM_TEST( assert_throws )
 {
+    std::printf("Before!\n");
+    EM_CHECK_SOFT(throw std::runtime_error("huh"), true);
+    std::printf("After soft assertion!\n");
     EM_CHECK(throw std::runtime_error("huh"), true);
+    std::printf("After hard assertion!\n");
 }
 
 EM_TEST( assert_throws_unknown )

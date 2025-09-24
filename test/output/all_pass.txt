@@ -1,0 +1,10 @@
+########## [ file   ] --- test/all_pass.cpp
+1/3        [ run    ] foo
+           [     OK ] foo (0.0 ms)
+2/3        [ run    ] bar
+           [     OK ] bar (0.0 ms)
+3/3        [ run    ] hello
+           [     OK ] hello (0.0 ms)
+
+All 3 tests passed
+--- EXIT CODE 0

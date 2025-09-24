@@ -1,0 +1,72 @@
+########## [ file   ] --- test/base.cpp
+1/9        [ run    ] pass
+           [     OK ] pass (0.0 ms)
+2/9        [ run    ] pass2
+Hello!
+           [     OK ] pass2 (100.1 ms)
+3/9        [ run    ] throw_simple
+  .        [   .    ]     Uncaught exception:
+  .        [   .    ]         std::runtime_error
+  .        [   .    ]             heh
+  1 failed [   FAIL ] throw_simple (0.2 ms)   at:  test/base.cpp:20
+4/9        [ run    ] throw_nested
+  .        [   .    ]     Uncaught exception:
+  .        [   .    ]         std::logic_error
+  .        [   .    ]             while doing stuff:
+  .        [   .    ]         std::out_of_range
+  .        [   .    ]             while doing more stuff:
+  .        [   .    ]         std::runtime_error
+  .        [   .    ]             heh
+  2 failed [   FAIL ] throw_nested (0.1 ms)   at:  test/base.cpp:25
+5/9        [ run    ] throw_unknown
+  .        [   .    ]     Uncaught exception:
+  .        [   .    ]         Unknown exception.
+  3 failed [   FAIL ] throw_unknown (0.0 ms)   at:  test/base.cpp:44
+6/9        [ run    ] throw_nested_unknown
+  .        [   .    ]     Uncaught exception:
+  .        [   .    ]         std::logic_error
+  .        [   .    ]             while doing stuff:
+  .        [   .    ]         Unknown exception.
+  4 failed [   FAIL ] throw_nested_unknown (0.0 ms)   at:  test/base.cpp:49
+7/9        [ run    ] assert_false
+Before!
+  .        [   .    ]     Assertion failed at:  test/base.cpp:65
+  .        [   .    ]         Expression:  false
+  .        [   .    ]         Evaluated to false.
+After soft assertion!
+  .        [   .    ]     Assertion failed at:  test/base.cpp:67
+  .        [   .    ]         Expression:  false
+  .        [   .    ]         Evaluated to false.
+  5 failed [   FAIL ] assert_false (0.0 ms)   at:  test/base.cpp:62
+8/9        [ run    ] assert_throws
+Before!
+  .        [   .    ]     Assertion failed at:  test/base.cpp:75
+  .        [   .    ]         Expression:  throw std::runtime_error("huh"), true
+  .        [   .    ]         Threw an uncaught exception:
+  .        [   .    ]             std::runtime_error
+  .        [   .    ]                 huh
+After soft assertion!
+  .        [   .    ]     Assertion failed at:  test/base.cpp:77
+  .        [   .    ]         Expression:  throw std::runtime_error("huh"), true
+  .        [   .    ]         Threw an uncaught exception:
+  .        [   .    ]             std::runtime_error
+  .        [   .    ]                 huh
+  6 failed [   FAIL ] assert_throws (0.1 ms)   at:  test/base.cpp:72
+9/9        [ run    ] assert_throws_unknown
+  .        [   .    ]     Assertion failed at:  test/base.cpp:83
+  .        [   .    ]         Expression:  throw 42, true
+  .        [   .    ]         Threw an uncaught exception:
+  .        [   .    ]             Unknown exception.
+  7 failed [   FAIL ] assert_throws_unknown (0.0 ms)   at:  test/base.cpp:81
+
+Failed tests:
+    throw_simple            at:  test/base.cpp:20
+    throw_nested            at:  test/base.cpp:25
+    throw_unknown           at:  test/base.cpp:44
+    throw_nested_unknown    at:  test/base.cpp:49
+    assert_false            at:  test/base.cpp:62
+    assert_throws           at:  test/base.cpp:72
+    assert_throws_unknown   at:  test/base.cpp:81
+
+Ran 9 tests, 2 passed, 7 FAILED
+--- EXIT CODE 1

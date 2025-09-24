@@ -150,75 +150,25 @@ namespace em::minitest
         // The type is passed as a string because we can't get the current `std::type_index` for nested exception (the current type, not the nested one).
         EM_MINITEST_API bool AnalyzeCurrentException(FuncRef<bool(std::string_view type_name, const char *message)> on_element);
         // Uses `AnalyzeCurrentException()` to print the current exception.
-        EM_MINITEST_API void PrintCurrentException();
+        EM_MINITEST_API void PrintCurrentException(const char *indent);
         #endif
 
-        // Runs the lambda once. If possible, catches exceptions and prints the exception messages.
-        // Runs `on_failure` if an exception is caught, before logging anything. Except if `InterruptTestException` is caught, in that case don't run it.
-        // You must manually fail the test in `on_failure`.
-        // If `ThrowInterruptTestException` is true, `InterruptTestException` gets thrown on any exception.
-        // Otherwise a default-constructed instance gets returned.
-        // Since `ThrowInterruptTestException == false` requires the return type to be default-constructible, this flag has to be a template parameter.
-        template <typename R, bool ThrowInterruptTestException>
-        decltype(auto) RunWithCatch(FuncRef<R()> func, FuncRef<void()> on_failure)
-        {
-            #if EM_MINITEST_EXCEPTIONS
-            if (true)
-            {
-                // Run the test with exception catching.
-                try
-                {
-                    return decltype(func)(func)();
-                }
-                catch (InterruptTestException)
-                {
-                    if constexpr (ThrowInterruptTestException)
-                        throw;
-                    else
-                        return decltype(decltype(func)(func)()){}; // Default-construct the return type.
-                }
-                catch (...)
-                {
-                    on_failure();
-                    PrintCurrentException();
-
-                    if constexpr (ThrowInterruptTestException)
-                        throw InterruptTestException{};
-                }
-            }
-            else
-            #else
-            (void)on_failure;
-            #endif
-            {
-                // Run the test without exception catching.
-                return decltype(func)(func)();
-            }
-        }
-
-        // This is called by `Assert()` to fail the assert.
-        EM_MINITEST_API void FailAssert(const char *file, int line, const char *expr_str, bool because_of_exception);
+        #if EM_MINITEST_EXCEPTIONS
+        // Don't call this directly, use `DETAIL_EM_MINITEST_RUN_WITH_CATCH()`.
+        // Runs the lambda once. If it doesn't throw, returns its return value.
+        // If the lambda throws `InterruptTestException`, either rethrows it if `rethrow_interrupt`, or returns false otherwise.
+        // If the lambda throws something else, calls `on_failure()` and returns false.
+        // You must manually fail the test in `on_failure`, manually print the exception if needed, and manually throw `InterruptTestException` if needed.
+        EM_MINITEST_API bool RunWithCatchImpl(bool rethrow_interrupt, FuncRef<bool()> func, FuncRef<void()> on_failure);
+        #define DETAIL_EM_MINITEST_RUN_WITH_CATCH(rethrow_interrupt_, func_, .../*on_failure*/) detail::RunWithCatchImpl((rethrow_interrupt_), (func_), __VA_ARGS__)
+        #else
+        #define DETAIL_EM_MINITEST_RUN_WITH_CATCH(rethrow_interrupt_, func_, .../*on_failure*/) (func_)()
+        #endif
 
         // Do an assertion. This is what `EM_CHECK(...)` calls.
-        // `func` is `() -> T`, where `T` is contextually convertible to bool, as if by `x ? true : false`.
         // `file` and `line` is the source location.
         // `expr_str` is the stringized input expression.
-        decltype(auto) Assert(const char *file, int line, const char *expr_str, auto &&func)
-        requires requires{decltype(func)(func)() ? true : false;} // Check that the lambda result is convertible to bool.
-        {
-            decltype(auto) ret = RunWithCatch<decltype(decltype(func)(func)()), true>(decltype(func)(func), [&]{FailAssert(file, line, expr_str, true);});
-
-            // This is only reachable if calling `func` didn't throw.
-
-            if (ret ? false : true) // A weak conversion to bool.
-                FailAssert(file, line, expr_str, false);
-
-            // Forward the return value.
-            if constexpr (std::is_rvalue_reference_v<decltype(ret)>)
-                return std::move(ret);
-            else
-                return ret;
-        }
+        EM_MINITEST_API bool Assert(bool stop_on_failure, const char *file, int line, const char *expr_str, FuncRef<bool()> func);
     }
 }
 
@@ -349,45 +299,106 @@ namespace em::minitest
             return false;
         }
 
-        void PrintCurrentException()
+        void PrintCurrentException(const char *indent)
         {
-            AnalyzeCurrentException([](std::string_view type_name, const char *message)
+            AnalyzeCurrentException([&](std::string_view type_name, const char *message)
             {
                 if (type_name.empty())
                 {
                     // Unknown type.
-                    std::fprintf(stderr, DETAIL_EM_MINITEST_LOG_STR "        Unknown exception.\n", DETAIL_EM_MINITEST_LOG_PARAMS);
+                    std::fprintf(stderr, DETAIL_EM_MINITEST_LOG_STR "%sUnknown exception.\n", DETAIL_EM_MINITEST_LOG_PARAMS, indent);
                 }
                 else
                 {
                     // Print the known type.
                     // Here we don't print any special indication to distinguish from `Unknown exception.`, because that's clearly not a valid type anyway.
-                    std::fprintf(stderr, DETAIL_EM_MINITEST_LOG_STR "        %.*s\n", DETAIL_EM_MINITEST_LOG_PARAMS, (int)type_name.size(), type_name.data());
+                    std::fprintf(stderr, DETAIL_EM_MINITEST_LOG_STR "%s%.*s\n", DETAIL_EM_MINITEST_LOG_PARAMS, indent, (int)type_name.size(), type_name.data());
 
                     // Print message.
                     // Here we don't print any special indication to distinguish from `(null)` simply because it looks better, and null shouldn't be possible here.
                     if (message)
-                        std::fprintf(stderr, DETAIL_EM_MINITEST_LOG_STR "            %s\n", DETAIL_EM_MINITEST_LOG_PARAMS, message);
+                        std::fprintf(stderr, DETAIL_EM_MINITEST_LOG_STR "%s    %s\n", DETAIL_EM_MINITEST_LOG_PARAMS, indent, message);
                     else
-                        std::fprintf(stderr, DETAIL_EM_MINITEST_LOG_STR "            (null)\n", DETAIL_EM_MINITEST_LOG_PARAMS);
+                        std::fprintf(stderr, DETAIL_EM_MINITEST_LOG_STR "%s    (null)\n", DETAIL_EM_MINITEST_LOG_PARAMS, indent);
                 }
 
                 return false;
-
             });
+        }
+
+        bool RunWithCatchImpl(bool rethrow_interrupt, FuncRef<bool()> func, FuncRef<void()> on_failure)
+        {
+            // Run the test with exception catching.
+            try
+            {
+                return func();
+            }
+            catch (InterruptTestException)
+            {
+                if (rethrow_interrupt)
+                    throw;
+                else
+                    return false;
+            }
+            catch (...)
+            {
+                on_failure();
+                return false;
+            }
         }
         #endif
 
-        void FailAssert(const char *file, int line, const char *expr_str, bool because_of_exception)
+        bool Assert(bool stop_on_failure, const char *file, int line, const char *expr_str, FuncRef<bool()> func)
         {
-            *fail_test_ptr = true;
-            // It should be impossible for this to be called twice, so there is no guard.
-            std::fprintf(stderr, DETAIL_EM_MINITEST_LOG_STR "    Assertion failed at:  %s:%d\n", DETAIL_EM_MINITEST_LOG_PARAMS, file, line);
-            std::fprintf(stderr, DETAIL_EM_MINITEST_LOG_STR "    Expression:  %s\n", DETAIL_EM_MINITEST_LOG_PARAMS, expr_str);
-            if (because_of_exception)
-                std::fprintf(stderr, DETAIL_EM_MINITEST_LOG_STR "    Threw an uncaught exception:\n", DETAIL_EM_MINITEST_LOG_PARAMS);
-            else
-                std::fprintf(stderr, DETAIL_EM_MINITEST_LOG_STR "    Evaluated to false.\n", DETAIL_EM_MINITEST_LOG_PARAMS);
+            #if EM_MINITEST_EXCEPTIONS
+            bool got_exception = false;
+            #endif
+
+            auto FailAssert = [&]
+            {
+                // Flush the user output.
+                std::fflush(stdout);
+                std::fflush(stderr);
+
+                *fail_test_ptr = true;
+                // It should be impossible for this to be called twice, so there is no guard.
+                std::fprintf(stderr, DETAIL_EM_MINITEST_LOG_STR "    Assertion failed at:  %s:%d\n", DETAIL_EM_MINITEST_LOG_PARAMS, file, line);
+                std::fprintf(stderr, DETAIL_EM_MINITEST_LOG_STR "        Expression:  %s\n", DETAIL_EM_MINITEST_LOG_PARAMS, expr_str);
+
+                #if EM_MINITEST_EXCEPTIONS
+                if (got_exception)
+                {
+                    std::fprintf(stderr, DETAIL_EM_MINITEST_LOG_STR "        Threw an uncaught exception:\n", DETAIL_EM_MINITEST_LOG_PARAMS);
+                    detail::PrintCurrentException("            ");
+                }
+                else
+                #endif
+                {
+                    std::fprintf(stderr, DETAIL_EM_MINITEST_LOG_STR "        Evaluated to false.\n", DETAIL_EM_MINITEST_LOG_PARAMS);
+                }
+
+                #if EM_MINITEST_EXCEPTIONS
+                if (stop_on_failure)
+                    throw InterruptTestException{};
+                #else
+                (void)stop_on_failure;
+                #endif
+            };
+
+            bool ret = DETAIL_EM_MINITEST_RUN_WITH_CATCH(true, func, [&]
+            {
+                got_exception = true;
+                FailAssert(); // This can't be deduplicated with the one below, because this one is in a `catch`, and rethrows the current exception to print it.
+            });
+
+            if (!ret
+                #if EM_MINITEST_EXCEPTIONS
+                && !got_exception
+                #endif
+            )
+                FailAssert();
+
+            return ret;
         }
     }
 
@@ -500,11 +511,25 @@ namespace em::minitest
                 test_start_time = Clock::now();
 
                 // Run the test.
-                detail::RunWithCatch<void, false>(elem.second.func, [&]
-                {
-                    fail_test = true;
-                    std::fprintf(stderr, DETAIL_EM_MINITEST_LOG_STR "    Uncaught exception:\n", DETAIL_EM_MINITEST_LOG_PARAMS);
-                });
+                DETAIL_EM_MINITEST_RUN_WITH_CATCH(
+                    false,
+                    [&]
+                    {
+                        elem.second.func();
+                        return false; // The return value doesn't matter.
+                    },
+                    [&]
+                    {
+                        fail_test = true;
+
+                        // Flush the user output.
+                        std::fflush(stdout);
+                        std::fflush(stderr);
+
+                        std::fprintf(stderr, DETAIL_EM_MINITEST_LOG_STR "    Uncaught exception:\n", DETAIL_EM_MINITEST_LOG_PARAMS);
+                        detail::PrintCurrentException("        ");
+                    }
+                );
             }
 
             // Finish measuring time.
@@ -550,14 +575,16 @@ namespace em::minitest
     int main(int argc, char **argv) {return ::em::minitest::RunTests(argc, argv);}
 
 // Declare a test: `EM_TEST(identifier) {body...}`. Only usable in .cpp files. Trying to use those in headers will cause multiple definition errors.
-#define EM_TEST(name) DETAIL_EM_TEST(name, DETAIL_EM_TEST_CAT(__test_,name))
+#define EM_TEST(name) DETAIL_EM_MINITEST_TEST(name, DETAIL_EM_MINITEST_CAT(__test_,name))
 
 // Evaluate an assertion: `EM_CHECK(cond)`. The condition doesn't have to be a boolean. Anything that `if (...)` accepts is fine.
-#define EM_CHECK(...) ::em::minitest::detail::Assert(__FILE__, __LINE__, #__VA_ARGS__, [&] -> decltype(auto) {return (__VA_ARGS__);});
+// This version tries to stop the test on failure. This is only possible if exceptiosn are enabled.
+#define EM_CHECK(...) ::em::minitest::detail::Assert(true, __FILE__, __LINE__, #__VA_ARGS__, [&] -> decltype(auto) {return (__VA_ARGS__);});
+// Evaluate an assertion: `EM_CHECK(cond)`. The condition doesn't have to be a boolean. Anything that `if (...)` accepts is fine.
+// This version doesn't try to stop the test on failure.
+#define EM_CHECK_SOFT(...) ::em::minitest::detail::Assert(false, __FILE__, __LINE__, #__VA_ARGS__, [&] -> decltype(auto) {return (__VA_ARGS__);});
 
-#define EM_MUST_THROW(...) ::em::minitest::detail::MustThrow(__FILE__, __LINE__, #__VA_ARGS__, [&]{__VA_ARGS__;)
-
-#define DETAIL_EM_TEST(name_, func_name_) \
+#define DETAIL_EM_MINITEST_TEST(name_, func_name_) \
     /* Make sure we're at namespace scope. */\
     namespace {} \
     static void func_name_(); \
@@ -568,8 +595,8 @@ namespace em::minitest
     /* This is static to allow different TUs to use the same test names. */\
     static void func_name_()
 
-#define DETAIL_EM_TEST_CAT(x, y) DETAIL_EM_TEST_CAT_(x, y)
-#define DETAIL_EM_TEST_CAT_(x, y) x##y
+#define DETAIL_EM_MINITEST_CAT(x, y) DETAIL_EM_MINITEST_CAT_(x, y)
+#define DETAIL_EM_MINITEST_CAT_(x, y) x##y
 
-#define DETAIL_EM_TEST_STR(...) DETAIL_EM_TEST_STR_(__VA_ARGS__)
-#define DETAIL_EM_TEST_STR_(...) #__VA_ARGS__
+#define DETAIL_EM_MINITEST_STR(...) DETAIL_EM_MINITEST_STR_(__VA_ARGS__)
+#define DETAIL_EM_MINITEST_STR_(...) #__VA_ARGS__
