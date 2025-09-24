@@ -16,6 +16,7 @@ EM_TEST( pass2 )
     std::fprintf(stderr, "Hello from A!\n");
 }
 
+#if __cpp_exceptions
 EM_TEST( throw_simple )
 {
     throw std::runtime_error("heh");
@@ -56,12 +57,14 @@ EM_TEST( throw_nested_unknown )
         std::throw_with_nested(std::logic_error("while doing stuff:"));
     }
 }
+#endif
 
 EM_TEST( assert_false )
 {
     EM_CHECK(false);
 }
 
+#if __cpp_exceptions
 EM_TEST( assert_throws )
 {
     EM_CHECK(throw std::runtime_error("huh"), true);
@@ -71,3 +74,4 @@ EM_TEST( assert_throws_unknown )
 {
     EM_CHECK(throw 42, true);
 }
+#endif

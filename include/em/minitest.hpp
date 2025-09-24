@@ -31,7 +31,6 @@
 #include <exception>
 #include <functional>
 #include <map>
-#include <stdexcept>
 #include <string_view>
 #include <string>
 #include <type_traits>
@@ -51,6 +50,9 @@ namespace em::minitest
 
     namespace detail
     {
+        // Terminates the program with an error.
+        [[noreturn]] EM_MINITEST_API void InternalError(std::string_view message);
+
         struct TestDesc
         {
             std::string_view file; // Null-terminated.
@@ -110,7 +112,7 @@ namespace em::minitest
                 auto [iter, is_new] = m.try_emplace(TestDesc{.file = File.view(), .line = Line, .name = Name.view()});
                 // Here duplicates shouldn't be possible, since they should cause link errors.
                 if (!is_new)
-                    throw std::logic_error("minitest: Internal error: A duplicate test was registered at `" + std::string(File.view()) + ":" + std::to_string(Line) + "`, named `" + std::string(Name.view()) + "`." );
+                    detail::InternalError("A duplicate test was registered at `" + std::string(File.view()) + ":" + std::to_string(Line) + "`, named `" + std::string(Name.view()) + "`.");
 
                 iter->second.func = F;
 
@@ -185,6 +187,8 @@ namespace em::minitest
                 }
             }
             else
+            #else
+            (void)on_failure;
             #endif
             {
                 // Run the test without exception catching.
@@ -277,6 +281,12 @@ namespace em::minitest
         static thread_local bool *fail_test_ptr = nullptr;
 
         static thread_local std::size_t test_counters_width = 0;
+
+        void InternalError(std::string_view message)
+        {
+            std::fprintf(stderr, "minitest: Internal error: %.*s\n", (int)message.size(), message.data());
+            std::exit(2); // Because `1` is for failed tests.
+        }
 
         [[nodiscard]] TestMap &GetTestMap()
         {
