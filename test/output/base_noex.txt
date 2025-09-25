@@ -6,18 +6,18 @@ Hello!
            [     OK ] pass2 (100.1 ms)
 3/3        [ run    ] assert_false
 Before!
-  .        [   .    ]     Assertion failed at:  test/base.cpp:65
+  .        [   .    ]     Assertion failed at:  test/base.cpp:64
   .        [   .    ]         Expression:  false
   .        [   .    ]         Evaluated to false.
 After soft assertion!
-  .        [   .    ]     Assertion failed at:  test/base.cpp:67
+  .        [   .    ]     Assertion failed at:  test/base.cpp:66
   .        [   .    ]         Expression:  false
   .        [   .    ]         Evaluated to false.
 After hard assertion!
-  1 failed [   FAIL ] assert_false (0.0 ms)   at:  test/base.cpp:62
+  1 failed [   FAIL ] assert_false (0.0 ms)   at:  test/base.cpp:61
 
 Failed tests:
-    assert_false   at:  test/base.cpp:62
+    assert_false   at:  test/base.cpp:61
 
 Ran 3 tests, 2 passed, 1 FAILED
 --- EXIT CODE 1

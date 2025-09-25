@@ -1,5 +1,4 @@
 #define EM_ENABLE_TESTS
-#define EM_MINITEST_IMPLEMENTATION
 #include <em/minitest.hpp>
 
 EM_MINITEST_MAIN
