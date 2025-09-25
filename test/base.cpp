@@ -58,10 +58,12 @@ EM_TEST( throw_nested_unknown )
 }
 #endif
 
+#define FALSEY false
+
 EM_TEST( assert_false )
 {
     std::printf("Before!\n");
-    EM_CHECK_SOFT(false);
+    EM_CHECK_SOFT(FALSEY); // `FALSEY` shouldn't be expanded in the log!
     std::printf("After soft assertion!\n");
     EM_CHECK(false);
     std::printf("After hard assertion!\n");
