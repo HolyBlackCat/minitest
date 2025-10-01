@@ -1,72 +1,185 @@
 ########## [ file   ] --- test/base.cpp
-1/9        [ run    ] pass
+1/19       [ run    ] pass
            [     OK ] pass (0.0 ms)
-2/9        [ run    ] pass2
+2/19       [ run    ] pass2
 Hello!
            [     OK ] pass2 (100.1 ms)
-3/9        [ run    ] throw_simple
+3/19       [ run    ] throw_simple
   .        [   .    ]     Uncaught exception:
   .        [   .    ]         std::runtime_error
   .        [   .    ]             heh
   1 failed [   FAIL ] throw_simple (0.1 ms)   at:  test/base.cpp:19
-4/9        [ run    ] throw_nested
+4/19       [ run    ] throw_nested
   .        [   .    ]     Uncaught exception:
   .        [   .    ]         std::logic_error
   .        [   .    ]             while doing stuff:
   .        [   .    ]         std::out_of_range
   .        [   .    ]             while doing more stuff:
+  .        [   .    ]             (and another line)
   .        [   .    ]         std::runtime_error
   .        [   .    ]             heh
+  .        [   .    ]             this is a
+  .        [   .    ]             multiline message
   2 failed [   FAIL ] throw_nested (0.1 ms)   at:  test/base.cpp:24
-5/9        [ run    ] throw_unknown
+5/19       [ run    ] throw_unknown
   .        [   .    ]     Uncaught exception:
   .        [   .    ]         Unknown exception.
-  3 failed [   FAIL ] throw_unknown (0.0 ms)   at:  test/base.cpp:43
-6/9        [ run    ] throw_nested_unknown
+  3 failed [   FAIL ] throw_unknown (0.0 ms)   at:  test/base.cpp:44
+6/19       [ run    ] throw_nested_unknown
   .        [   .    ]     Uncaught exception:
   .        [   .    ]         std::logic_error
   .        [   .    ]             while doing stuff:
   .        [   .    ]         Unknown exception.
-  4 failed [   FAIL ] throw_nested_unknown (0.0 ms)   at:  test/base.cpp:48
-7/9        [ run    ] assert_false
+  4 failed [   FAIL ] throw_nested_unknown (0.0 ms)   at:  test/base.cpp:49
+7/19       [ run    ] throw_interrupt
+  4 failed [     OK ] throw_interrupt (0.0 ms)
+8/19       [ run    ] assert_false
 Before!
-  .        [   .    ]     Assertion failed at:  test/base.cpp:66
+  .        [   .    ]     Assertion failed at:  test/base.cpp:73
   .        [   .    ]         Expression:  FALSEY
   .        [   .    ]         Evaluated to false.
 After soft assertion!
-  .        [   .    ]     Assertion failed at:  test/base.cpp:68
+  .        [   .    ]     Assertion failed at:  test/base.cpp:75
   .        [   .    ]         Expression:  false
   .        [   .    ]         Evaluated to false.
-  5 failed [   FAIL ] assert_false (0.0 ms)   at:  test/base.cpp:63
-8/9        [ run    ] assert_throws
+  5 failed [   FAIL ] assert_false (0.0 ms)   at:  test/base.cpp:70
+9/19       [ run    ] assert_throws
 Before!
-  .        [   .    ]     Assertion failed at:  test/base.cpp:76
+  .        [   .    ]     Assertion failed at:  test/base.cpp:83
   .        [   .    ]         Expression:  throw std::runtime_error("huh"), true
   .        [   .    ]         Threw an uncaught exception:
   .        [   .    ]             std::runtime_error
   .        [   .    ]                 huh
 After soft assertion!
-  .        [   .    ]     Assertion failed at:  test/base.cpp:78
+  .        [   .    ]     Assertion failed at:  test/base.cpp:85
   .        [   .    ]         Expression:  throw std::runtime_error("huh"), true
   .        [   .    ]         Threw an uncaught exception:
   .        [   .    ]             std::runtime_error
   .        [   .    ]                 huh
-  6 failed [   FAIL ] assert_throws (0.0 ms)   at:  test/base.cpp:73
-9/9        [ run    ] assert_throws_unknown
-  .        [   .    ]     Assertion failed at:  test/base.cpp:84
+  6 failed [   FAIL ] assert_throws (0.0 ms)   at:  test/base.cpp:80
+10/19      [ run    ] assert_throws_unknown
+  .        [   .    ]     Assertion failed at:  test/base.cpp:91
   .        [   .    ]         Expression:  throw 42, true
   .        [   .    ]         Threw an uncaught exception:
   .        [   .    ]             Unknown exception.
-  7 failed [   FAIL ] assert_throws_unknown (0.0 ms)   at:  test/base.cpp:82
+  7 failed [   FAIL ] assert_throws_unknown (0.0 ms)   at:  test/base.cpp:89
+11/19      [ run    ] must_throw_any_fail
+Before!
+  .        [   .    ]     Missing exception at:  test/base.cpp:98
+After soft check!
+  .        [   .    ]     Missing exception at:  test/base.cpp:100
+  8 failed [   FAIL ] must_throw_any_fail (0.0 ms)   at:  test/base.cpp:95
+12/19      [ run    ] must_throw_fail
+Before!
+  .        [   .    ]     Missing exception at:  test/base.cpp:108
+After soft check!
+  .        [   .    ]     Missing exception at:  test/base.cpp:110
+  9 failed [   FAIL ] must_throw_fail (0.0 ms)   at:  test/base.cpp:105
+13/19      [ run    ] must_throw_any_unknown
+  9 failed [     OK ] must_throw_any_unknown (0.0 ms)
+14/19      [ run    ] must_throw_any
+  9 failed [     OK ] must_throw_any (0.0 ms)
+15/19      [ run    ] must_throw_mismatch_unknown
+Before!
+  .        [   .    ]     Incorrect exception at:  test/base.cpp:130
+  .        [   .    ]     Exception:
+  .        [   .    ]         Caught    | Expected
+  .        [   .    ]         (unknown) # std::runtime_error
+  .        [   .    ]            .      #     42
+After soft check!
+  .        [   .    ]     Incorrect exception at:  test/base.cpp:132
+  .        [   .    ]     Exception:
+  .        [   .    ]         Caught    | Expected
+  .        [   .    ]         (unknown) # std::runtime_error
+  .        [   .    ]            .      #     42
+  .        [   .    ]            .      #     hello world
+ 10 failed [   FAIL ] must_throw_mismatch_unknown (0.1 ms)   at:  test/base.cpp:127
+16/19      [ run    ] must_throw_mismatch_type
+Before!
+  .        [   .    ]     Incorrect exception at:  test/base.cpp:140
+  .        [   .    ]     Exception:
+  .        [   .    ]         Caught           | Expected
+  .        [   .    ]         std::logic_error # std::runtime_error
+  .        [   .    ]             foo          |     foo
+  .        [   .    ]             barbar       |     barbar
+After soft check!
+  .        [   .    ]     Incorrect exception at:  test/base.cpp:142
+  .        [   .    ]     Exception:
+  .        [   .    ]         Caught                     | Expected
+  .        [   .    ]         std::logic_error           # std::runtime_error
+  .        [   .    ]             some long long message |     some long long message
+  .        [   .    ]             barbar                 |     barbar
+ 11 failed [   FAIL ] must_throw_mismatch_type (0.1 ms)   at:  test/base.cpp:137
+17/19      [ run    ] must_throw_mismatch_message
+Before!
+  .        [   .    ]     Incorrect exception at:  test/base.cpp:150
+  .        [   .    ]     Exception:
+  .        [   .    ]         Caught             | Expected
+  .        [   .    ]         std::runtime_error | std::runtime_error
+  .        [   .    ]             foo            |     foo
+  .        [   .    ]             barbar1        #     barbar
+  .        [   .    ]     Incorrect exception at:  test/base.cpp:152
+  .        [   .    ]     Exception:
+  .        [   .    ]         Caught             | Expected
+  .        [   .    ]         std::runtime_error | std::runtime_error
+  .        [   .    ]             foo            |     foo
+  .        [   .    ]             barbar         |     barbar
+  .        [   .    ]             hmm            #    .
+  .        [   .    ]     Incorrect exception at:  test/base.cpp:154
+  .        [   .    ]     Exception:
+  .        [   .    ]         Caught             | Expected
+  .        [   .    ]         std::runtime_error | std::runtime_error
+  .        [   .    ]             foo            |     foo
+  .        [   .    ]             barbar         |     barbar
+  .        [   .    ]            .               #     hmm
+After soft check!
+  .        [   .    ]     Incorrect exception at:  test/base.cpp:156
+  .        [   .    ]     Exception:
+  .        [   .    ]         Caught                      | Expected
+  .        [   .    ]         std::runtime_error          | std::runtime_error
+  .        [   .    ]             some long long message1 #     some long long message
+  .        [   .    ]             barbar                  |     barbar
+ 12 failed [   FAIL ] must_throw_mismatch_message (0.1 ms)   at:  test/base.cpp:147
+18/19      [ run    ] must_throw_mismatch_nested
+  .        [   .    ]     Incorrect exception at:  test/base.cpp:173
+  .        [   .    ]     Exception:
+  .        [   .    ]         Caught             | Expected
+  .        [   .    ]         std::logic_error   | std::logic_error
+  .        [   .    ]             logic          |     logic
+  .        [   .    ]         std::runtime_error # (none)
+  .        [   .    ]             blah           #    .
+  .        [   .    ]     Incorrect exception at:  test/base.cpp:185
+  .        [   .    ]     Exception:
+  .        [   .    ]         Caught           | Expected
+  .        [   .    ]         std::logic_error | std::logic_error
+  .        [   .    ]             logic        |     logic
+  .        [   .    ]         (unknown)        # (none)
+  .        [   .    ]            .             #    .
+  .        [   .    ]     Incorrect exception at:  test/base.cpp:190
+  .        [   .    ]     Exception:
+  .        [   .    ]         Caught             | Expected
+  .        [   .    ]         std::runtime_error | std::runtime_error
+  .        [   .    ]             blah           |     blah
+  .        [   .    ]         (none)             # std::runtime_error
+  .        [   .    ]            .               #     bleh
+ 13 failed [   FAIL ] must_throw_mismatch_nested (0.1 ms)   at:  test/base.cpp:161
+19/19      [ run    ] must_throw_pass_nested
+ 13 failed [     OK ] must_throw_pass_nested (0.0 ms)
 
 Failed tests:
-    throw_simple            at:  test/base.cpp:19
-    throw_nested            at:  test/base.cpp:24
-    throw_unknown           at:  test/base.cpp:43
-    throw_nested_unknown    at:  test/base.cpp:48
-    assert_false            at:  test/base.cpp:63
-    assert_throws           at:  test/base.cpp:73
-    assert_throws_unknown   at:  test/base.cpp:82
+    throw_simple                  at:  test/base.cpp:19
+    throw_nested                  at:  test/base.cpp:24
+    throw_unknown                 at:  test/base.cpp:44
+    throw_nested_unknown          at:  test/base.cpp:49
+    assert_false                  at:  test/base.cpp:70
+    assert_throws                 at:  test/base.cpp:80
+    assert_throws_unknown         at:  test/base.cpp:89
+    must_throw_any_fail           at:  test/base.cpp:95
+    must_throw_fail               at:  test/base.cpp:105
+    must_throw_mismatch_unknown   at:  test/base.cpp:127
+    must_throw_mismatch_type      at:  test/base.cpp:137
+    must_throw_mismatch_message   at:  test/base.cpp:147
+    must_throw_mismatch_nested    at:  test/base.cpp:161
 
-Ran 9 tests, 2 passed, 7 FAILED
+Ran 19 tests, 6 passed, 13 FAILED
 --- EXIT CODE 1

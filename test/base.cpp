@@ -27,11 +27,12 @@ EM_TEST( throw_nested )
     {
         try
         {
-            throw std::runtime_error("heh");
+            // Test multiline errors, while we're at it.
+            throw std::runtime_error("heh\nthis is a\nmultiline message");
         }
         catch (...)
         {
-            std::throw_with_nested(std::out_of_range("while doing more stuff:"));
+            std::throw_with_nested(std::out_of_range("while doing more stuff:\n(and another line)"));
         }
     }
     catch (...)
@@ -55,6 +56,12 @@ EM_TEST( throw_nested_unknown )
     {
         std::throw_with_nested(std::logic_error("while doing stuff:"));
     }
+}
+
+EM_TEST( throw_interrupt )
+{
+    // This doesn't fail the test.
+    EM_CHECK(throw em::minitest::InterruptTestException{}, true);
 }
 #endif
 
@@ -82,5 +89,119 @@ EM_TEST( assert_throws )
 EM_TEST( assert_throws_unknown )
 {
     EM_CHECK(throw 42, true);
+}
+
+// Expected any exception, got none.
+EM_TEST( must_throw_any_fail )
+{
+    std::printf("Before!\n");
+    EM_MUST_THROW_SOFT( 42 );
+    std::printf("After soft check!\n");
+    EM_MUST_THROW( 42 );
+    std::printf("After hard check!\n");
+}
+
+// Expected specific exception, got none.
+EM_TEST( must_throw_fail )
+{
+    std::printf("Before!\n");
+    EM_MUST_THROW_SOFT( 42 )( std::runtime_error("a") );
+    std::printf("After soft check!\n");
+    EM_MUST_THROW( 42 )( std::runtime_error("a"), std::logic_error("b") );
+    std::printf("After hard check!\n");
+}
+
+// Expected any exception, got unknown.
+EM_TEST( must_throw_any_unknown )
+{
+    EM_MUST_THROW( throw 42 );
+}
+
+// Expected any exception, got known.
+EM_TEST( must_throw_any )
+{
+    EM_MUST_THROW( throw std::runtime_error("foo") );
+}
+
+// Expected specific exception, got unknown.
+EM_TEST( must_throw_mismatch_unknown )
+{
+    std::printf("Before!\n");
+    EM_MUST_THROW_SOFT( throw 42 )( std::runtime_error("42") );
+    std::printf("After soft check!\n");
+    EM_MUST_THROW( throw 42 )( std::runtime_error("42\nhello world") );
+    std::printf("After hard check!\n");
+}
+
+// Expected specific exception, got wrong type.
+EM_TEST( must_throw_mismatch_type )
+{
+    std::printf("Before!\n");
+    EM_MUST_THROW_SOFT( throw std::logic_error("foo\nbarbar") )( std::runtime_error("foo\nbarbar") );
+    std::printf("After soft check!\n");
+    EM_MUST_THROW( throw std::logic_error("some long long message\nbarbar") )( std::runtime_error("some long long message\nbarbar") );
+    std::printf("After hard check!\n");
+}
+
+// Expected specific exception, got wrong message.
+EM_TEST( must_throw_mismatch_message )
+{
+    std::printf("Before!\n");
+    EM_MUST_THROW_SOFT( throw std::runtime_error("foo\nbarbar1") )( std::runtime_error("foo\nbarbar") );
+    // Too many lines in the actual exception.
+    EM_MUST_THROW_SOFT( throw std::runtime_error("foo\nbarbar\nhmm") )( std::runtime_error("foo\nbarbar") );
+    // Too many lines in the expected exception.
+    EM_MUST_THROW_SOFT( throw std::runtime_error("foo\nbarbar") )( std::runtime_error("foo\nbarbar\nhmm") );
+    std::printf("After soft check!\n");
+    EM_MUST_THROW( throw std::runtime_error("some long long message1\nbarbar") )( std::runtime_error("some long long message\nbarbar") );
+    std::printf("After hard check!\n");
+}
+
+// Problems in nested exceptions
+EM_TEST( must_throw_mismatch_nested )
+{
+    // More nesting than expected.
+    EM_MUST_THROW_SOFT(
+        try
+        {
+            throw std::runtime_error("blah");
+        }
+        catch (...)
+        {
+            std::throw_with_nested(std::logic_error("logic"));
+        }
+    )( std::logic_error("logic") );
+
+    // More nesting than expected, with an unknown exception.
+    EM_MUST_THROW_SOFT(
+        try
+        {
+            throw 42;
+        }
+        catch (...)
+        {
+            std::throw_with_nested(std::logic_error("logic"));
+        }
+    )( std::logic_error("logic") );
+
+    // Less nesting than expected.
+    EM_MUST_THROW_SOFT(
+        throw std::runtime_error("blah");
+    )( std::runtime_error("blah"), std::runtime_error("bleh") );
+}
+
+EM_TEST( must_throw_pass_nested )
+{
+    // More nesting than expected.
+    EM_MUST_THROW_SOFT(
+        try
+        {
+            throw std::runtime_error("blah");
+        }
+        catch (...)
+        {
+            std::throw_with_nested(std::logic_error("logic"));
+        }
+    )( std::logic_error("logic"), std::runtime_error("blah") );
 }
 #endif
