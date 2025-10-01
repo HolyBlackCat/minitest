@@ -3,7 +3,7 @@
            [     OK ] pass (0.0 ms)
 2/3        [ run    ] pass2
 Hello!
-           [     OK ] pass2 (100.1 ms)
+           [     OK ] pass2 (100.4 ms)
 3/3        [ run    ] assert_false
 Before!
   .        [   .    ]     Assertion failed at:  test/base.cpp:73

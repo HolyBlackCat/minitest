@@ -3,7 +3,7 @@
            [     OK ] pass (0.0 ms)
 2/19       [ run    ] pass2
 Hello!
-           [     OK ] pass2 (100.1 ms)
+           [     OK ] pass2 (100.2 ms)
 3/19       [ run    ] throw_simple
   .        [   .    ]     Uncaught exception:
   .        [   .    ]         std::runtime_error
@@ -42,7 +42,7 @@ After soft assertion!
   .        [   .    ]     Assertion failed at:  test/base.cpp:75
   .        [   .    ]         Expression:  false
   .        [   .    ]         Evaluated to false.
-  5 failed [   FAIL ] assert_false (0.0 ms)   at:  test/base.cpp:70
+  5 failed [   FAIL ] assert_false (0.1 ms)   at:  test/base.cpp:70
 9/19       [ run    ] assert_throws
 Before!
   .        [   .    ]     Assertion failed at:  test/base.cpp:83
@@ -56,7 +56,7 @@ After soft assertion!
   .        [   .    ]         Threw an uncaught exception:
   .        [   .    ]             std::runtime_error
   .        [   .    ]                 huh
-  6 failed [   FAIL ] assert_throws (0.0 ms)   at:  test/base.cpp:80
+  6 failed [   FAIL ] assert_throws (0.1 ms)   at:  test/base.cpp:80
 10/19      [ run    ] assert_throws_unknown
   .        [   .    ]     Assertion failed at:  test/base.cpp:91
   .        [   .    ]         Expression:  throw 42, true

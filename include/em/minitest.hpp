@@ -913,14 +913,15 @@ namespace em::minitest
 
 // Evaluate an assertion: `EM_CHECK(cond)`. The condition doesn't have to be a boolean, anything that `if (...)` accepts is fine.
 // Returns the `bool` value of the condition.
-// This version tries to stop the test on failure. This is only possible if exceptiosn are enabled.
 #define EM_CHECK(...) DETAIL_EM_MINITEST_ASSERT(true, #__VA_ARGS__, __VA_ARGS__)
-// Evaluate an assertion: `EM_CHECK(cond)`. The condition doesn't have to be a boolean, anything that `if (...)` accepts is fine.
-// Returns the `bool` value of the condition.
-// This version doesn't try to stop the test on failure.
+// Like `EM_CHECK()`, but doesn't immediately stop the test on failure. The test will still fail when it finishes executing.
 #define EM_CHECK_SOFT(...) DETAIL_EM_MINITEST_ASSERT(false, #__VA_ARGS__, __VA_ARGS__)
 
+// Check that something throws an exception: `EM_MUST_THROW(...)`. `...` is either a single expression or one or more statements, the last `;` is optional.
+// This can be followed by `(...)` with an exception you're expecting to get, e.g. `EM_MUST_THROW( foo() )(std::runtime_error("foo"))`.
+// You can specify several exceptions separated by a comma, that means you're expecting a nested exception.
 #define EM_MUST_THROW(...) DETAIL_EM_MINITEST_MUST_THROW(true, #__VA_ARGS__, __VA_ARGS__)
+// Like `EM_MUST_THROW()`, but doesn't immediately stop the test on failure. The test will still fail when it finishes executing.
 #define EM_MUST_THROW_SOFT(...) DETAIL_EM_MINITEST_MUST_THROW(false, #__VA_ARGS__, __VA_ARGS__)
 
 // Internal macros:
