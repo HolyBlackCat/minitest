@@ -645,79 +645,117 @@ namespace em::minitest
 
             FailCheck("Incorrect exception");
 
-            // The table header
-            std::fprintf(stderr, DETAIL_EM_MINITEST_LOG_STR "    Exception:\n", DETAIL_EM_MINITEST_LOG_PARAMS);
-            std::fprintf(stderr, DETAIL_EM_MINITEST_LOG_STR "        %-*s | %s\n", DETAIL_EM_MINITEST_LOG_PARAMS,
-                (int)max_string_len,
-                "Caught",
-                "Expected"
-            );
-
-            // How many exceptions to print. This is the max between the number of caught and expected exceptions.
-            // Don't want to include `<algorithm>` for `std::max()`.
-            std::size_t n = num_caught_exceptions > num_expected_exceptions ? num_caught_exceptions : num_expected_exceptions;
-
-            for (std::size_t i = 0; i < n; i++)
+            // Special-case a shorter printing format when there is no nesting, and only the message is different.
+            if (num_caught_exceptions == 1 && num_expected_exceptions == 1 && caught_exceptions[0].type == args.begin()->type)
             {
-                const Arg *caught_ex = nullptr;
-                if (i < num_caught_exceptions)
-                    caught_ex = &caught_exceptions[i];
-
-                const Arg *expected_ex = nullptr;
-                if (i < num_expected_exceptions)
-                    expected_ex = &args.begin()[i];
-
-                { // The type.
-                    // Caught.
-                    if (caught_ex && !caught_ex->type.empty())
+                std::fprintf(stderr, DETAIL_EM_MINITEST_LOG_STR "    Exception:\n", DETAIL_EM_MINITEST_LOG_PARAMS);
+                bool first = true;
+                SplitString(caught_exceptions[0].message, "\n", [&](std::string_view line)
+                {
+                    if (first)
                     {
-                        std::fprintf(stderr, DETAIL_EM_MINITEST_LOG_STR "        %-*.*s", DETAIL_EM_MINITEST_LOG_PARAMS,
-                            (int)max_string_len,
-                            (int)caught_ex->type.size(),
-                            caught_ex->type.data()
-                        );
+                        first = false;
+                        std::fprintf(stderr, DETAIL_EM_MINITEST_LOG_STR "        Caught:   %.*s\n", DETAIL_EM_MINITEST_LOG_PARAMS, (int)line.size(), line.data());
                     }
                     else
                     {
-                        std::fprintf(stderr, DETAIL_EM_MINITEST_LOG_STR "        %-*s", DETAIL_EM_MINITEST_LOG_PARAMS,
-                            (int)max_string_len,
-                            caught_ex ? "(unknown)" : "(none)"
-                        );
+                        std::fprintf(stderr, DETAIL_EM_MINITEST_LOG_STR "                  %.*s\n", DETAIL_EM_MINITEST_LOG_PARAMS, (int)line.size(), line.data());
                     }
-
-                    // Matches or not?
-                    if (caught_ex && expected_ex && caught_ex->type == expected_ex->type)
-                        std::fprintf(stderr, " | ");
+                    return false;
+                });
+                first = true;
+                SplitString(args.begin()->message, "\n", [&](std::string_view line)
+                {
+                    if (first)
+                    {
+                        first = false;
+                        std::fprintf(stderr, DETAIL_EM_MINITEST_LOG_STR "        Expected: %.*s\n", DETAIL_EM_MINITEST_LOG_PARAMS, (int)line.size(), line.data());
+                    }
                     else
-                        std::fprintf(stderr, " # ");
+                    {
+                        std::fprintf(stderr, DETAIL_EM_MINITEST_LOG_STR "                  %.*s\n", DETAIL_EM_MINITEST_LOG_PARAMS, (int)line.size(), line.data());
+                    }
+                    return false;
+                });
+            }
+            else
+            {
+                // The full printing format.
 
-                    // Expected.
-                    if (expected_ex)
-                        std::fprintf(stderr, "%.*s\n", (int)expected_ex->type.size(), expected_ex->type.data());
-                    else
-                        std::fprintf(stderr, "(none)\n");
-                }
+                // The table header
+                std::fprintf(stderr, DETAIL_EM_MINITEST_LOG_STR "    Exception:\n", DETAIL_EM_MINITEST_LOG_PARAMS);
+                std::fprintf(stderr, DETAIL_EM_MINITEST_LOG_STR "        %-*s | %s\n", DETAIL_EM_MINITEST_LOG_PARAMS,
+                    (int)max_string_len,
+                    "Caught",
+                    "Expected"
+                );
 
-                { // The message.
-                    SplitString2(
-                        caught_ex && !caught_ex->type.empty() ? caught_ex->message : std::string_view{}, // Not `""` to force a null `.data()`, which has a special meaning, see below.
-                        expected_ex && !expected_ex->type.empty() ? expected_ex->message : std::string_view{}, // Not `""` to force a null `.data()`, which has a special meaning, see below.
-                        "\n",
-                        [&](std::string_view caught_line, std::string_view expected_line)
+                // How many exceptions to print. This is the max between the number of caught and expected exceptions.
+                // Don't want to include `<algorithm>` for `std::max()`.
+                std::size_t n = num_caught_exceptions > num_expected_exceptions ? num_caught_exceptions : num_expected_exceptions;
+
+                for (std::size_t i = 0; i < n; i++)
+                {
+                    const Arg *caught_ex = nullptr;
+                    if (i < num_caught_exceptions)
+                        caught_ex = &caught_exceptions[i];
+
+                    const Arg *expected_ex = nullptr;
+                    if (i < num_expected_exceptions)
+                        expected_ex = &args.begin()[i];
+
+                    { // The type.
+                        // Caught.
+                        if (caught_ex && !caught_ex->type.empty())
                         {
-                            // Notice that `.data()` of the parameters can be `nullptr`, which has a special effect. It means we ran out of segments in that string.
-
-                            std::fprintf(stderr, DETAIL_EM_MINITEST_LOG_STR "       %*s%c%-*.*s %c    %c%.*s\n", DETAIL_EM_MINITEST_LOG_PARAMS,
-                                (int)message_indent, "",
-                                caught_line.data() ? ' ' : '.', // Missing caught line indicator.
-                                int(max_string_len - message_indent), (int)caught_line.size(), caught_line.data(),
-                                caught_line.data() && expected_line.data() && caught_line == expected_line ? '|' : '#',
-                                expected_line.data() ? ' ' : '.', // Missing expected line indicator.
-                                (int)expected_line.size(), expected_line.data()
+                            std::fprintf(stderr, DETAIL_EM_MINITEST_LOG_STR "        %-*.*s", DETAIL_EM_MINITEST_LOG_PARAMS,
+                                (int)max_string_len,
+                                (int)caught_ex->type.size(),
+                                caught_ex->type.data()
                             );
-                            return false;
                         }
-                    );
+                        else
+                        {
+                            std::fprintf(stderr, DETAIL_EM_MINITEST_LOG_STR "        %-*s", DETAIL_EM_MINITEST_LOG_PARAMS,
+                                (int)max_string_len,
+                                caught_ex ? "(unknown)" : "(none)"
+                            );
+                        }
+
+                        // Matches or not?
+                        if (caught_ex && expected_ex && caught_ex->type == expected_ex->type)
+                            std::fprintf(stderr, " | ");
+                        else
+                            std::fprintf(stderr, " # ");
+
+                        // Expected.
+                        if (expected_ex)
+                            std::fprintf(stderr, "%.*s\n", (int)expected_ex->type.size(), expected_ex->type.data());
+                        else
+                            std::fprintf(stderr, "(none)\n");
+                    }
+
+                    { // The message.
+                        SplitString2(
+                            caught_ex && !caught_ex->type.empty() ? caught_ex->message : std::string_view{}, // Not `""` to force a null `.data()`, which has a special meaning, see below.
+                            expected_ex && !expected_ex->type.empty() ? expected_ex->message : std::string_view{}, // Not `""` to force a null `.data()`, which has a special meaning, see below.
+                            "\n",
+                            [&](std::string_view caught_line, std::string_view expected_line)
+                            {
+                                // Notice that `.data()` of the parameters can be `nullptr`, which has a special effect. It means we ran out of segments in that string.
+
+                                std::fprintf(stderr, DETAIL_EM_MINITEST_LOG_STR "       %*s%c%-*.*s %c    %c%.*s\n", DETAIL_EM_MINITEST_LOG_PARAMS,
+                                    (int)message_indent, "",
+                                    caught_line.data() ? ' ' : '.', // Missing caught line indicator.
+                                    int(max_string_len - message_indent), (int)caught_line.size(), caught_line.data(),
+                                    caught_line.data() && expected_line.data() && caught_line == expected_line ? '|' : '#',
+                                    expected_line.data() ? ' ' : '.', // Missing expected line indicator.
+                                    (int)expected_line.size(), expected_line.data()
+                                );
+                                return false;
+                            }
+                        );
+                    }
                 }
             }
 

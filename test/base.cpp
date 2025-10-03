@@ -143,18 +143,26 @@ EM_TEST( must_throw_mismatch_type )
     std::printf("After hard check!\n");
 }
 
-// Expected specific exception, got wrong message.
+// Expected specific exception, got wrong message. (Also mismatching the type to avoid the shorter printing format that's used for mismatched messages only.)
 EM_TEST( must_throw_mismatch_message )
 {
     std::printf("Before!\n");
-    EM_MUST_THROW_SOFT( throw std::runtime_error("foo\nbarbar1") )( std::runtime_error("foo\nbarbar") );
+    EM_MUST_THROW_SOFT( throw std::logic_error("foo\nbarbar1") )( std::runtime_error("foo\nbarbar") );
     // Too many lines in the actual exception.
-    EM_MUST_THROW_SOFT( throw std::runtime_error("foo\nbarbar\nhmm") )( std::runtime_error("foo\nbarbar") );
+    EM_MUST_THROW_SOFT( throw std::logic_error("foo\nbarbar\nhmm") )( std::runtime_error("foo\nbarbar") );
     // Too many lines in the expected exception.
-    EM_MUST_THROW_SOFT( throw std::runtime_error("foo\nbarbar") )( std::runtime_error("foo\nbarbar\nhmm") );
+    EM_MUST_THROW_SOFT( throw std::logic_error("foo\nbarbar") )( std::runtime_error("foo\nbarbar\nhmm") );
     std::printf("After soft check!\n");
-    EM_MUST_THROW( throw std::runtime_error("some long long message1\nbarbar") )( std::runtime_error("some long long message\nbarbar") );
+    EM_MUST_THROW( throw std::logic_error("some long long message1\nbarbar") )( std::runtime_error("some long long message\nbarbar") );
     std::printf("After hard check!\n");
+}
+
+// Expected specific exception, got wrong message and the same type. This uses a nicer printing format.
+EM_TEST( must_throw_mismatch_message_only )
+{
+    EM_MUST_THROW_SOFT( throw std::runtime_error("blah") )( std::runtime_error("bleh") );
+    EM_MUST_THROW_SOFT( throw std::runtime_error("blah\nfoo") )( std::runtime_error("bleh") );
+    EM_MUST_THROW_SOFT( throw std::runtime_error("blah") )( std::runtime_error("bleh\nfoo") );
 }
 
 // Problems in nested exceptions
@@ -188,6 +196,18 @@ EM_TEST( must_throw_mismatch_nested )
     EM_MUST_THROW_SOFT(
         throw std::runtime_error("blah");
     )( std::runtime_error("blah"), std::runtime_error("bleh") );
+
+    // Message mismatch with nesting involved. To test that it doesn't use the shorter printing format because of nesting.
+    EM_MUST_THROW_SOFT(
+        try
+        {
+            throw std::runtime_error("blah");
+        }
+        catch (...)
+        {
+            std::throw_with_nested(std::logic_error("logic1"));
+        }
+    )( std::logic_error("logic"), std::runtime_error("blah") );
 }
 
 EM_TEST( must_throw_pass_nested )
