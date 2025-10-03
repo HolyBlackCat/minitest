@@ -652,18 +652,18 @@ namespace em::minitest
             // Special-case a shorter printing format when there is no nesting, and only the message is different.
             if (num_caught_exceptions == 1 && num_expected_exceptions == 1 && caught_exceptions[0].type == args.begin()->type)
             {
-                std::fprintf(stderr, DETAIL_EM_MINITEST_LOG_STR "    Exception:\n", DETAIL_EM_MINITEST_LOG_PARAMS);
+                std::fprintf(stderr, DETAIL_EM_MINITEST_LOG_STR "        Exception:\n", DETAIL_EM_MINITEST_LOG_PARAMS);
                 bool first = true;
                 SplitString(caught_exceptions[0].message, "\n", [&](std::string_view line)
                 {
                     if (first)
                     {
                         first = false;
-                        std::fprintf(stderr, DETAIL_EM_MINITEST_LOG_STR "        Caught:   %.*s\n", DETAIL_EM_MINITEST_LOG_PARAMS, (int)line.size(), line.data());
+                        std::fprintf(stderr, DETAIL_EM_MINITEST_LOG_STR "            Caught:   %.*s\n", DETAIL_EM_MINITEST_LOG_PARAMS, (int)line.size(), line.data());
                     }
                     else
                     {
-                        std::fprintf(stderr, DETAIL_EM_MINITEST_LOG_STR "                  %.*s\n", DETAIL_EM_MINITEST_LOG_PARAMS, (int)line.size(), line.data());
+                        std::fprintf(stderr, DETAIL_EM_MINITEST_LOG_STR "                      %.*s\n", DETAIL_EM_MINITEST_LOG_PARAMS, (int)line.size(), line.data());
                     }
                     return false;
                 });
@@ -673,11 +673,11 @@ namespace em::minitest
                     if (first)
                     {
                         first = false;
-                        std::fprintf(stderr, DETAIL_EM_MINITEST_LOG_STR "        Expected: %.*s\n", DETAIL_EM_MINITEST_LOG_PARAMS, (int)line.size(), line.data());
+                        std::fprintf(stderr, DETAIL_EM_MINITEST_LOG_STR "            Expected: %.*s\n", DETAIL_EM_MINITEST_LOG_PARAMS, (int)line.size(), line.data());
                     }
                     else
                     {
-                        std::fprintf(stderr, DETAIL_EM_MINITEST_LOG_STR "                  %.*s\n", DETAIL_EM_MINITEST_LOG_PARAMS, (int)line.size(), line.data());
+                        std::fprintf(stderr, DETAIL_EM_MINITEST_LOG_STR "                      %.*s\n", DETAIL_EM_MINITEST_LOG_PARAMS, (int)line.size(), line.data());
                     }
                     return false;
                 });
@@ -687,8 +687,8 @@ namespace em::minitest
                 // The full printing format.
 
                 // The table header
-                std::fprintf(stderr, DETAIL_EM_MINITEST_LOG_STR "    Exception:\n", DETAIL_EM_MINITEST_LOG_PARAMS);
-                std::fprintf(stderr, DETAIL_EM_MINITEST_LOG_STR "        %-*s | %s\n", DETAIL_EM_MINITEST_LOG_PARAMS,
+                std::fprintf(stderr, DETAIL_EM_MINITEST_LOG_STR "        Exception:\n", DETAIL_EM_MINITEST_LOG_PARAMS);
+                std::fprintf(stderr, DETAIL_EM_MINITEST_LOG_STR "            %-*s | %s\n", DETAIL_EM_MINITEST_LOG_PARAMS,
                     (int)max_string_len,
                     "Caught",
                     "Expected"
@@ -712,7 +712,7 @@ namespace em::minitest
                         // Caught.
                         if (caught_ex && !caught_ex->type.empty())
                         {
-                            std::fprintf(stderr, DETAIL_EM_MINITEST_LOG_STR "        %-*.*s", DETAIL_EM_MINITEST_LOG_PARAMS,
+                            std::fprintf(stderr, DETAIL_EM_MINITEST_LOG_STR "            %-*.*s", DETAIL_EM_MINITEST_LOG_PARAMS,
                                 (int)max_string_len,
                                 (int)caught_ex->type.size(),
                                 caught_ex->type.data()
@@ -720,7 +720,7 @@ namespace em::minitest
                         }
                         else
                         {
-                            std::fprintf(stderr, DETAIL_EM_MINITEST_LOG_STR "        %-*s", DETAIL_EM_MINITEST_LOG_PARAMS,
+                            std::fprintf(stderr, DETAIL_EM_MINITEST_LOG_STR "            %-*s", DETAIL_EM_MINITEST_LOG_PARAMS,
                                 (int)max_string_len,
                                 caught_ex ? "(unknown)" : "(none)"
                             );
@@ -748,7 +748,7 @@ namespace em::minitest
                             {
                                 // Notice that `.data()` of the parameters can be `nullptr`, which has a special effect. It means we ran out of segments in that string.
 
-                                std::fprintf(stderr, DETAIL_EM_MINITEST_LOG_STR "       %*s%c%-*.*s %c    %c%.*s\n", DETAIL_EM_MINITEST_LOG_PARAMS,
+                                std::fprintf(stderr, DETAIL_EM_MINITEST_LOG_STR "           %*s%c%-*.*s %c    %c%.*s\n", DETAIL_EM_MINITEST_LOG_PARAMS,
                                     (int)message_indent, "",
                                     caught_line.data() ? ' ' : '.', // Missing caught line indicator.
                                     int(max_string_len - message_indent), (int)caught_line.size(), caught_line.data(),

@@ -3,7 +3,7 @@
            [     OK ] pass (0.0 ms)
 2/20       [ run    ] pass2
 Hello!
-           [     OK ] pass2 (100.1 ms)
+           [     OK ] pass2 (100.7 ms)
 3/20       [ run    ] throw_simple
   .        [   .    ]     Uncaught exception:
   .        [   .    ]         std::runtime_error
@@ -30,7 +30,7 @@ Hello!
   .        [   .    ]         std::logic_error
   .        [   .    ]             while doing stuff:
   .        [   .    ]         Unknown exception.
-  4 failed [   FAIL ] throw_nested_unknown (0.0 ms)   at:  test/base.cpp:49
+  4 failed [   FAIL ] throw_nested_unknown (0.1 ms)   at:  test/base.cpp:49
 7/20       [ run    ] throw_interrupt
   4 failed [     OK ] throw_interrupt (0.0 ms)
 8/20       [ run    ] assert_false
@@ -42,7 +42,7 @@ After soft assertion!
   .        [   .    ]     Assertion failed at:  test/base.cpp:75
   .        [   .    ]         Expression:  false
   .        [   .    ]         Evaluated to false.
-  5 failed [   FAIL ] assert_false (0.0 ms)   at:  test/base.cpp:70
+  5 failed [   FAIL ] assert_false (0.1 ms)   at:  test/base.cpp:70
 9/20       [ run    ] assert_throws
 Before!
   .        [   .    ]     Assertion failed at:  test/base.cpp:83
@@ -56,13 +56,13 @@ After soft assertion!
   .        [   .    ]         Threw an uncaught exception:
   .        [   .    ]             std::runtime_error
   .        [   .    ]                 huh
-  6 failed [   FAIL ] assert_throws (0.1 ms)   at:  test/base.cpp:80
+  6 failed [   FAIL ] assert_throws (0.0 ms)   at:  test/base.cpp:80
 10/20      [ run    ] assert_throws_unknown
   .        [   .    ]     Assertion failed at:  test/base.cpp:91
   .        [   .    ]         Expression:  throw 42, true
   .        [   .    ]         Threw an uncaught exception:
   .        [   .    ]             Unknown exception.
-  7 failed [   FAIL ] assert_throws_unknown (0.1 ms)   at:  test/base.cpp:89
+  7 failed [   FAIL ] assert_throws_unknown (0.0 ms)   at:  test/base.cpp:89
 11/20      [ run    ] must_throw_any_fail
 Before!
   .        [   .    ]     Missing exception at:  test/base.cpp:98
@@ -87,124 +87,124 @@ After soft check!
 Before!
   .        [   .    ]     Incorrect exception at:  test/base.cpp:130
   .        [   .    ]         Expression:  throw 42
-  .        [   .    ]     Exception:
-  .        [   .    ]         Caught    | Expected
-  .        [   .    ]         (unknown) # std::runtime_error
-  .        [   .    ]            .      #     42
+  .        [   .    ]         Exception:
+  .        [   .    ]             Caught    | Expected
+  .        [   .    ]             (unknown) # std::runtime_error
+  .        [   .    ]                .      #     42
 After soft check!
   .        [   .    ]     Incorrect exception at:  test/base.cpp:132
   .        [   .    ]         Expression:  throw 42
-  .        [   .    ]     Exception:
-  .        [   .    ]         Caught    | Expected
-  .        [   .    ]         (unknown) # std::runtime_error
-  .        [   .    ]            .      #     42
-  .        [   .    ]            .      #     hello world
+  .        [   .    ]         Exception:
+  .        [   .    ]             Caught    | Expected
+  .        [   .    ]             (unknown) # std::runtime_error
+  .        [   .    ]                .      #     42
+  .        [   .    ]                .      #     hello world
  10 failed [   FAIL ] must_throw_mismatch_unknown (0.1 ms)   at:  test/base.cpp:127
 16/20      [ run    ] must_throw_mismatch_type
 Before!
   .        [   .    ]     Incorrect exception at:  test/base.cpp:140
   .        [   .    ]         Expression:  throw std::logic_error("foo\nbarbar")
-  .        [   .    ]     Exception:
-  .        [   .    ]         Caught           | Expected
-  .        [   .    ]         std::logic_error # std::runtime_error
-  .        [   .    ]             foo          |     foo
-  .        [   .    ]             barbar       |     barbar
+  .        [   .    ]         Exception:
+  .        [   .    ]             Caught           | Expected
+  .        [   .    ]             std::logic_error # std::runtime_error
+  .        [   .    ]                 foo          |     foo
+  .        [   .    ]                 barbar       |     barbar
 After soft check!
   .        [   .    ]     Incorrect exception at:  test/base.cpp:142
   .        [   .    ]         Expression:  throw std::logic_error("some long long message\nbarbar")
-  .        [   .    ]     Exception:
-  .        [   .    ]         Caught                     | Expected
-  .        [   .    ]         std::logic_error           # std::runtime_error
-  .        [   .    ]             some long long message |     some long long message
-  .        [   .    ]             barbar                 |     barbar
+  .        [   .    ]         Exception:
+  .        [   .    ]             Caught                     | Expected
+  .        [   .    ]             std::logic_error           # std::runtime_error
+  .        [   .    ]                 some long long message |     some long long message
+  .        [   .    ]                 barbar                 |     barbar
  11 failed [   FAIL ] must_throw_mismatch_type (0.1 ms)   at:  test/base.cpp:137
 17/20      [ run    ] must_throw_mismatch_message
 Before!
   .        [   .    ]     Incorrect exception at:  test/base.cpp:150
   .        [   .    ]         Expression:  throw std::logic_error("foo\nbarbar1")
-  .        [   .    ]     Exception:
-  .        [   .    ]         Caught           | Expected
-  .        [   .    ]         std::logic_error # std::runtime_error
-  .        [   .    ]             foo          |     foo
-  .        [   .    ]             barbar1      #     barbar
+  .        [   .    ]         Exception:
+  .        [   .    ]             Caught           | Expected
+  .        [   .    ]             std::logic_error # std::runtime_error
+  .        [   .    ]                 foo          |     foo
+  .        [   .    ]                 barbar1      #     barbar
   .        [   .    ]     Incorrect exception at:  test/base.cpp:152
   .        [   .    ]         Expression:  throw std::logic_error("foo\nbarbar\nhmm")
-  .        [   .    ]     Exception:
-  .        [   .    ]         Caught           | Expected
-  .        [   .    ]         std::logic_error # std::runtime_error
-  .        [   .    ]             foo          |     foo
-  .        [   .    ]             barbar       |     barbar
-  .        [   .    ]             hmm          #    .
+  .        [   .    ]         Exception:
+  .        [   .    ]             Caught           | Expected
+  .        [   .    ]             std::logic_error # std::runtime_error
+  .        [   .    ]                 foo          |     foo
+  .        [   .    ]                 barbar       |     barbar
+  .        [   .    ]                 hmm          #    .
   .        [   .    ]     Incorrect exception at:  test/base.cpp:154
   .        [   .    ]         Expression:  throw std::logic_error("foo\nbarbar")
-  .        [   .    ]     Exception:
-  .        [   .    ]         Caught           | Expected
-  .        [   .    ]         std::logic_error # std::runtime_error
-  .        [   .    ]             foo          |     foo
-  .        [   .    ]             barbar       |     barbar
-  .        [   .    ]            .             #     hmm
+  .        [   .    ]         Exception:
+  .        [   .    ]             Caught           | Expected
+  .        [   .    ]             std::logic_error # std::runtime_error
+  .        [   .    ]                 foo          |     foo
+  .        [   .    ]                 barbar       |     barbar
+  .        [   .    ]                .             #     hmm
 After soft check!
   .        [   .    ]     Incorrect exception at:  test/base.cpp:156
   .        [   .    ]         Expression:  throw std::logic_error("some long long message1\nbarbar")
-  .        [   .    ]     Exception:
-  .        [   .    ]         Caught                      | Expected
-  .        [   .    ]         std::logic_error            # std::runtime_error
-  .        [   .    ]             some long long message1 #     some long long message
-  .        [   .    ]             barbar                  |     barbar
- 12 failed [   FAIL ] must_throw_mismatch_message (0.2 ms)   at:  test/base.cpp:147
+  .        [   .    ]         Exception:
+  .        [   .    ]             Caught                      | Expected
+  .        [   .    ]             std::logic_error            # std::runtime_error
+  .        [   .    ]                 some long long message1 #     some long long message
+  .        [   .    ]                 barbar                  |     barbar
+ 12 failed [   FAIL ] must_throw_mismatch_message (0.1 ms)   at:  test/base.cpp:147
 18/20      [ run    ] must_throw_mismatch_message_only
   .        [   .    ]     Incorrect exception at:  test/base.cpp:163
   .        [   .    ]         Expression:  throw std::runtime_error("blah")
-  .        [   .    ]     Exception:
-  .        [   .    ]         Caught:   blah
-  .        [   .    ]         Expected: bleh
+  .        [   .    ]         Exception:
+  .        [   .    ]             Caught:   blah
+  .        [   .    ]             Expected: bleh
   .        [   .    ]     Incorrect exception at:  test/base.cpp:164
   .        [   .    ]         Expression:  throw std::runtime_error("blah\nfoo")
-  .        [   .    ]     Exception:
-  .        [   .    ]         Caught:   blah
-  .        [   .    ]                   foo
-  .        [   .    ]         Expected: bleh
+  .        [   .    ]         Exception:
+  .        [   .    ]             Caught:   blah
+  .        [   .    ]                       foo
+  .        [   .    ]             Expected: bleh
   .        [   .    ]     Incorrect exception at:  test/base.cpp:165
   .        [   .    ]         Expression:  throw std::runtime_error("blah")
-  .        [   .    ]     Exception:
-  .        [   .    ]         Caught:   blah
-  .        [   .    ]         Expected: bleh
-  .        [   .    ]                   foo
+  .        [   .    ]         Exception:
+  .        [   .    ]             Caught:   blah
+  .        [   .    ]             Expected: bleh
+  .        [   .    ]                       foo
  13 failed [   FAIL ] must_throw_mismatch_message_only (0.1 ms)   at:  test/base.cpp:161
 19/20      [ run    ] must_throw_mismatch_nested
   .        [   .    ]     Incorrect exception at:  test/base.cpp:181
   .        [   .    ]         Expression:  try { throw std::runtime_error("blah"); } catch (...) { std::throw_with_nested(std::logic_error("logic")); }
-  .        [   .    ]     Exception:
-  .        [   .    ]         Caught             | Expected
-  .        [   .    ]         std::logic_error   | std::logic_error
-  .        [   .    ]             logic          |     logic
-  .        [   .    ]         std::runtime_error # (none)
-  .        [   .    ]             blah           #    .
+  .        [   .    ]         Exception:
+  .        [   .    ]             Caught             | Expected
+  .        [   .    ]             std::logic_error   | std::logic_error
+  .        [   .    ]                 logic          |     logic
+  .        [   .    ]             std::runtime_error # (none)
+  .        [   .    ]                 blah           #    .
   .        [   .    ]     Incorrect exception at:  test/base.cpp:193
   .        [   .    ]         Expression:  try { throw 42; } catch (...) { std::throw_with_nested(std::logic_error("logic")); }
-  .        [   .    ]     Exception:
-  .        [   .    ]         Caught           | Expected
-  .        [   .    ]         std::logic_error | std::logic_error
-  .        [   .    ]             logic        |     logic
-  .        [   .    ]         (unknown)        # (none)
-  .        [   .    ]            .             #    .
+  .        [   .    ]         Exception:
+  .        [   .    ]             Caught           | Expected
+  .        [   .    ]             std::logic_error | std::logic_error
+  .        [   .    ]                 logic        |     logic
+  .        [   .    ]             (unknown)        # (none)
+  .        [   .    ]                .             #    .
   .        [   .    ]     Incorrect exception at:  test/base.cpp:198
   .        [   .    ]         Expression:  throw std::runtime_error("blah");
-  .        [   .    ]     Exception:
-  .        [   .    ]         Caught             | Expected
-  .        [   .    ]         std::runtime_error | std::runtime_error
-  .        [   .    ]             blah           |     blah
-  .        [   .    ]         (none)             # std::runtime_error
-  .        [   .    ]            .               #     bleh
+  .        [   .    ]         Exception:
+  .        [   .    ]             Caught             | Expected
+  .        [   .    ]             std::runtime_error | std::runtime_error
+  .        [   .    ]                 blah           |     blah
+  .        [   .    ]             (none)             # std::runtime_error
+  .        [   .    ]                .               #     bleh
   .        [   .    ]     Incorrect exception at:  test/base.cpp:210
   .        [   .    ]         Expression:  try { throw std::runtime_error("blah"); } catch (...) { std::throw_with_nested(std::logic_error("logic1")); }
-  .        [   .    ]     Exception:
-  .        [   .    ]         Caught             | Expected
-  .        [   .    ]         std::logic_error   | std::logic_error
-  .        [   .    ]             logic1         #     logic
-  .        [   .    ]         std::runtime_error | std::runtime_error
-  .        [   .    ]             blah           |     blah
- 14 failed [   FAIL ] must_throw_mismatch_nested (0.3 ms)   at:  test/base.cpp:169
+  .        [   .    ]         Exception:
+  .        [   .    ]             Caught             | Expected
+  .        [   .    ]             std::logic_error   | std::logic_error
+  .        [   .    ]                 logic1         #     logic
+  .        [   .    ]             std::runtime_error | std::runtime_error
+  .        [   .    ]                 blah           |     blah
+ 14 failed [   FAIL ] must_throw_mismatch_nested (0.2 ms)   at:  test/base.cpp:169
 20/20      [ run    ] must_throw_pass_nested
  14 failed [     OK ] must_throw_pass_nested (0.0 ms)
 
