@@ -618,6 +618,10 @@ namespace em::minitest
 
                 *fail_test_ptr = true;
                 std::fprintf(stderr, DETAIL_EM_MINITEST_LOG_STR "    %s at:  %s:%d\n", DETAIL_EM_MINITEST_LOG_PARAMS, message, file, line);
+
+                // Only print the expression if it's short enough. `EM_MUST_THROW` needs this because it can accept multiple statements, unlike `EM_CHECK`.
+                if (std::string_view(expr_str).size() <= 150)
+                    std::fprintf(stderr, DETAIL_EM_MINITEST_LOG_STR "        Expression:  %s\n", DETAIL_EM_MINITEST_LOG_PARAMS, expr_str);
             };
 
             // Fail if we didn't have any exceptions at all.
