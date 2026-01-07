@@ -225,3 +225,25 @@ EM_TEST( must_throw_pass_nested )
     )( std::logic_error("logic"), std::runtime_error("blah") );
 }
 #endif
+
+
+// Test `EM_TRY()`:
+
+#if EM_MINITEST_EXCEPTIONS
+EM_TEST( try )
+{
+    EM_TRY( 1 + 1 );
+    EM_TRY_SOFT( 1 + 1; );
+
+    EM_TRY_SOFT( throw std::runtime_error("1") );
+    EM_TRY_SOFT( throw std::runtime_error("2"); );
+    EM_TRY( throw std::runtime_error("3"); );
+    EM_TRY( throw std::runtime_error("4"); );
+}
+#endif
+
+EM_TEST( try_success )
+{
+    EM_TRY( 1 + 1 );
+    EM_TRY_SOFT( 1 + 1; );
+}

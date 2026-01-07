@@ -183,9 +183,14 @@ namespace em::minitest
         // Do an assertion. This is what `EM_CHECK(...)` calls.
         // `file` and `line` is the source location.
         // `expr_str` is the stringized input expression.
+        // Returns the result of `func()`, or false if that throws (assuming we don't throw `InterruptTestException{}`).
         EM_MINITEST_API bool Assert(bool stop_on_failure, const char *file, int line, const char *expr_str, FuncRef<bool()> func);
 
         #if EM_MINITEST_EXCEPTIONS
+        // Same as `Assert()`, but the lambda returns void. The only point of this is to check for exceptions.
+        // Returns true if `func()` didn't throw, or false if it did (assuming we don't throw `InterruptTestException{}`).
+        EM_MINITEST_API bool Try(bool stop_on_failure, const char *file, int line, const char *expr_str, FuncRef<void()> func);
+
         // Do an "must throw" check. This is what `EM_MUST_THROW(...)` calls.
         // `file` and `line` is the source location.
         // `expr_str` is the stringized input expression.
@@ -536,6 +541,27 @@ namespace em::minitest
         }
 
         #if EM_MINITEST_EXCEPTIONS
+        bool Try(bool stop_on_failure, const char *file, int line, const char *expr_str, FuncRef<void()> func)
+        {
+            return DETAIL_EM_MINITEST_RUN_WITH_CATCH(true, [&]{func(); return false;/*The result is ignored here.*/}, [&]
+            {
+                // Flush the user output.
+                std::fflush(stdout);
+                std::fflush(stderr);
+
+                *fail_test_ptr = true;
+                // It should be impossible for this to be called twice, so there is no guard.
+                std::fprintf(stderr, DETAIL_EM_MINITEST_LOG_STR "    Unexpected exception at:  %s:%d\n", DETAIL_EM_MINITEST_LOG_PARAMS, file, line);
+                std::fprintf(stderr, DETAIL_EM_MINITEST_LOG_STR "        Expression:  %s\n", DETAIL_EM_MINITEST_LOG_PARAMS, expr_str);
+
+                std::fprintf(stderr, DETAIL_EM_MINITEST_LOG_STR "        Threw an uncaught exception:\n", DETAIL_EM_MINITEST_LOG_PARAMS);
+                detail::PrintCurrentException("            ");
+
+                if (stop_on_failure)
+                    throw InterruptTestException{};
+            });
+        }
+
         void MustThrow::operator~()
         {
             static constexpr std::size_t max_num_caught_exceptions = 128;
@@ -959,6 +985,13 @@ namespace em::minitest
 // Like `EM_CHECK()`, but doesn't immediately stop the test on failure. The test will still fail when it finishes executing.
 #define EM_CHECK_SOFT(...) DETAIL_EM_MINITEST_ASSERT(false, #__VA_ARGS__, __VA_ARGS__)
 
+// Checks that the expression doesn't throw. This is equivalent to `EM_CHECK(..., true)`, other than for the reporting style.
+// Returns true, or throws on failure.
+// If exceptions are disabled, this just runs `...` and always returns true.
+#define EM_TRY(...) DETAIL_EM_MINITEST_TRY(true, #__VA_ARGS__, __VA_ARGS__)
+// This version eats the exception and returns false on failure, but still fails the test.
+#define EM_TRY_SOFT(...) DETAIL_EM_MINITEST_TRY(false, #__VA_ARGS__, __VA_ARGS__)
+
 // Check that something throws an exception: `EM_MUST_THROW(...)`. `...` is either a single expression or one or more statements, the last `;` is optional.
 // This can be followed by `(...)` with an exception you're expecting to get, e.g. `EM_MUST_THROW( foo() )(std::runtime_error("foo"))`.
 // You can specify several exceptions separated by a comma, that means you're expecting a nested exception.
@@ -982,9 +1015,19 @@ namespace em::minitest
 #define DETAIL_EM_MINITEST_ASSERT(stop_on_failure_, expr_str_, ...) \
     ::em::minitest::detail::Assert(stop_on_failure_, __FILE__, __LINE__, expr_str_, [&]() -> bool {return (__VA_ARGS__) ? true : false;})
 
+#if EM_MINITEST_EXCEPTIONS
+#define DETAIL_EM_MINITEST_TRY(stop_on_failure_, expr_str_, ...) \
+    ::em::minitest::detail::Try(stop_on_failure_, __FILE__, __LINE__, expr_str_, [&]() -> void {DETAIL_EM_MINITEST_IGNORE_UNUSED(__VA_ARGS__;)})
+#else
+#define DETAIL_EM_MINITEST_TRY(stop_on_failure_, expr_str_, ...) \
+    [&]() -> void {DETAIL_EM_MINITEST_IGNORE_UNUSED(__VA_ARGS__;)}() // Just make and call the lambda.
+#endif
+
+#if EM_MINITEST_EXCEPTIONS
 #define DETAIL_EM_MINITEST_MUST_THROW(stop_on_failure_, expr_str_, ...) \
     ~::em::minitest::detail::MustThrow(stop_on_failure_, __FILE__, __LINE__, expr_str_, [&] -> void {DETAIL_EM_MINITEST_IGNORE_UNUSED(__VA_ARGS__;)}).DETAIL_EM_MINITEST_MUST_THROW_ARGS
 #define DETAIL_EM_MINITEST_MUST_THROW_ARGS(...) AddArgs({__VA_ARGS__})
+#endif
 
 #define DETAIL_EM_MINITEST_CAT(x, y) DETAIL_EM_MINITEST_CAT_(x, y)
 #define DETAIL_EM_MINITEST_CAT_(x, y) x##y
